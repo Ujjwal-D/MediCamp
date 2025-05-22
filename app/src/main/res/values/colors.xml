@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- MediCamp Official Color Palette -->
+    <color name="medicamp_primary">#388E3C</color>
+    <color name="medicamp_primary_variant">#2E7D32</color>
+    <color name="medicamp_secondary">#0288D1</color>
+    <color name="medicamp_background">#FFFFFF</color>
+    <color name="medicamp_surface">#F5F5F5</color>
+    <color name="medicamp_error">#D32F2F</color>
+    <color name="medicamp_highlight">#FFC107</color>
+
+    <!-- Text Colors -->
+    <color name="medicamp_text_primary">#212121</color>
+    <color name="medicamp_text_secondary">#616161</color>
+</resources>
