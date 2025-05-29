@@ -2,6 +2,7 @@ package com.ujjwal.medicamp.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.io.Serializable
 import java.util.UUID
 
 @Entity(tableName = "events")
@@ -13,5 +14,8 @@ data class Event(
     val location: String,
     val lat: Double,
     val lon: Double,
+    val date: String = "",
+    val time: String = "",
     val isSaved: Boolean = false
-)
+) : Serializable
+

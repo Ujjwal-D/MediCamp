@@ -1,3 +1,12 @@
 <resources>
-    <string name="app_name">Medicamp</string>
+    <string name="app_name">MediCamp</string>
+    <string name="home_title">MediCamp</string>
+    <string name="empty_state_message">No events available.</string>
+    <string name="map_activity_title">Map</string>
+    <string name="search_hint">Search events</string>
+
+    <!-- Email sharing -->
+    <string name="email_subject">Check out this health camp: %1$s</string>
+    <string name="email_body">Hey, I found this community health event: %1$s.\\nLocation: %2$s.\\n\\nIt might be helpful to someone. Thought I\'d share it with you!</string>
+    <string name="email_error_message">Cannot share: Missing title or location.</string>
 </resources>

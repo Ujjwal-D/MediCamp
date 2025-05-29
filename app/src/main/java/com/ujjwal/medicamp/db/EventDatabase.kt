@@ -5,8 +5,14 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.ujjwal.medicamp.model.Event
+import com.ujjwal.medicamp.model.UserAuth
+import com.ujjwal.medicamp.model.UserProfile
 
-@Database(entities = [Event::class], version = 1, exportSchema = false)
+@Database(
+    entities = [Event::class, UserProfile::class, UserAuth::class],
+    version = 1,
+    exportSchema = false
+)
 abstract class EventDatabase : RoomDatabase() {
     abstract fun eventDao(): EventDao
 
@@ -19,7 +25,8 @@ abstract class EventDatabase : RoomDatabase() {
                     context.applicationContext,
                     EventDatabase::class.java,
                     "event_db"
-                ).build().also { INSTANCE = it }
+                ).fallbackToDestructiveMigration(true)// optional: wipe DB on schema mismatch
+                    .build().also { INSTANCE = it }
             }
         }
     }
