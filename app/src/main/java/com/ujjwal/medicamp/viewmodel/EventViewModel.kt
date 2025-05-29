@@ -1,37 +1,113 @@
 package com.ujjwal.medicamp.viewmodel
 
 import android.app.Application
+import android.util.Log
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.ujjwal.medicamp.db.EventDatabase
+import com.ujjwal.medicamp.model.Event
+import com.ujjwal.medicamp.model.UserAuth
+import com.ujjwal.medicamp.model.UserProfile
 import com.ujjwal.medicamp.repository.EventRepository
 import com.ujjwal.medicamp.utils.SeedData
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import java.security.MessageDigest
 
 class EventViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository: EventRepository
 
-    // Declare this after initializing `repository`
-    val allEvents: Flow<List<com.ujjwal.medicamp.model.Event>>
+    val allEvents: StateFlow<List<Event>>
+    val savedEvents: StateFlow<List<Event>>
+    val userProfile: StateFlow<UserProfile?>
+
+    private var _isLoggedIn = mutableStateOf(false)
+    val isLoggedIn: State<Boolean> = _isLoggedIn
 
     init {
         val dao = EventDatabase.getDatabase(application).eventDao()
         repository = EventRepository(dao)
 
-        // Now it's safe to access repository
         allEvents = repository.allEvents
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+        savedEvents = repository.savedEvents
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+        userProfile = repository.getUserProfile()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
         seedIfEmpty()
+        syncFromServer()
     }
 
     private fun seedIfEmpty() {
         viewModelScope.launch {
             repository.insertSeedIfEmpty(SeedData.defaultEvents())
         }
+    }
+
+    fun markSaved(id: String, isSaved: Boolean) {
+        viewModelScope.launch {
+            repository.markEventSaved(id, isSaved)
+        }
+    }
+
+    fun syncFromServer() {
+        viewModelScope.launch {
+            try {
+                repository.syncRemoteToLocal()
+                Log.d("EventViewModel", "Remote data synced successfully.")
+            } catch (e: Exception) {
+                Log.e("EventViewModel", "Sync failed: ${e.message}", e)
+            }
+        }
+    }
+
+    fun saveUserProfile(profile: UserProfile) {
+        viewModelScope.launch {
+            repository.saveUserProfile(profile)
+        }
+    }
+
+    fun login(username: String, password: String, onSuccess: () -> Unit, onFail: () -> Unit) {
+        viewModelScope.launch {
+            val hash = hashPassword(password)
+            if (repository.authenticateUser(username, hash)) {
+                _isLoggedIn.value = true
+                onSuccess()
+            } else {
+                onFail()
+            }
+        }
+    }
+
+    fun signup(username: String, password: String, onSuccess: () -> Unit, onFail: () -> Unit) {
+        viewModelScope.launch {
+            val hash = hashPassword(password)
+            try {
+                repository.registerUser(UserAuth(username, hash))
+                _isLoggedIn.value = true
+                onSuccess()
+            } catch (e: Exception) {
+                onFail()
+            }
+        }
+    }
+
+    fun logout() {
+        _isLoggedIn.value = false
+    }
+
+    private fun hashPassword(password: String): String {
+        val bytes = password.toByteArray()
+        val digest = MessageDigest.getInstance("SHA-256")
+        val hashedBytes = digest.digest(bytes)
+        return hashedBytes.joinToString("") { "%02x".format(it) }
     }
 }
