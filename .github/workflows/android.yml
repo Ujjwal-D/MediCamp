@@ -1,0 +1,33 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ main ]  # Change if your main branch has a different name
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      MAPS_API: ${{ secrets.MAPS_API }}  # This is your GitHub secret
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'  # Change if you're using a different Java version
+
+      - name: Create local.properties
+        run: echo "MAPS_API=${MAPS_API}" >> local.properties
+
+      - name: Grant permissions to Gradle wrapper
+        run: chmod +x ./gradlew
+
+      - name: Build the project
+        run: ./gradlew assembleDebug
