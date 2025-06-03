@@ -36,7 +36,7 @@ fun LoginScreen(
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(Color(0xFFC7F2FF), Color(0xFF4DBFE9))
+                    colors = listOf(Color(0xFF34ebde).copy(alpha = 0.5f), Color.White)
                 )
             )
             .padding(24.dp)
@@ -133,17 +133,21 @@ fun LoginScreen(
                         return@Button
                     }
                     if (isSignupMode) {
-                        viewModel.signup(username, password,
+                        viewModel.signup(
+                            username.trim(),
+                            password.trim(),
                             onSuccess = {
                                 errorMessage = null
-                                onAuthSuccess()
+                                isSignupMode = false
                             },
                             onFail = {
                                 errorMessage = "Signup failed"
                             }
                         )
                     } else {
-                        viewModel.login(username, password,
+                        viewModel.login(
+                            username.trim(),
+                            password.trim(),
                             onSuccess = {
                                 errorMessage = null
                                 onAuthSuccess()

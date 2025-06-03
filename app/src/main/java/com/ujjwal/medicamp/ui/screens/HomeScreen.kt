@@ -1,6 +1,5 @@
 package com.ujjwal.medicamp.ui.screens
 
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,14 +24,36 @@ import androidx.compose.ui.unit.sp
 import com.ujjwal.medicamp.R
 import com.ujjwal.medicamp.ui.components.BottomNavigationBar
 import com.ujjwal.medicamp.viewmodel.EventViewModel
+import java.util.*
 
 @Composable
 fun HomeScreen(
     viewModel: EventViewModel,
     onSavedClick: () -> Unit,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    onCategoryClick: (String) -> Unit
 ) {
-    val context = LocalContext.current
+    val profile by viewModel.userProfile.collectAsState()
+    val userName = profile?.fullName?.takeIf { it.isNotBlank() } ?: "Guest"
+
+    val currentHour = remember { Calendar.getInstance().get(Calendar.HOUR_OF_DAY) }
+    val greeting = when (currentHour) {
+        in 5..11 -> "Good morning"
+        in 12..16 -> "Good afternoon"
+        else -> "Good evening"
+    }
+
+    var searchQuery by remember { mutableStateOf("") }
+    val categories = listOf(
+        Triple("General Health", R.drawable.ic_general_health, "General Health"),
+        Triple("Mental Health", R.drawable.ic_mental_health, "Mental Health"),
+        Triple("Dental Camp", R.drawable.ic_dental_camp, "Dental Camp"),
+        Triple("Skin Health", R.drawable.ic_skin_health, "Skin Health"),
+        Triple("Immunization", R.drawable.ic_immunization, "Immunization"),
+        Triple("Women's Health", R.drawable.ic_women_health, "Women’s Health")
+    )
+
+    val suggestions = categories.filter { it.first.contains(searchQuery, ignoreCase = true) }
 
     Scaffold(
         bottomBar = {
@@ -46,10 +67,10 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(Brush.verticalGradient(listOf(Color(0xFF34ebde).copy(alpha = 0.5f), Color.White)))
                 .padding(paddingValues)
         ) {
-
-            // Translucent Top Banner with Title
+            // Banner
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -83,9 +104,9 @@ fun HomeScreen(
             Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
                 Text(
                     text = buildAnnotatedString {
-                        append("Goodmorning ")
+                        append("$greeting ")
                         withStyle(SpanStyle(color = Color(0xFF1976D2), fontWeight = FontWeight.Bold)) {
-                            append("John")
+                            append(userName)
                         }
                     },
                     fontSize = 22.sp,
@@ -101,8 +122,8 @@ fun HomeScreen(
 
             // Search Bar
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
                 placeholder = { Text(text = "Search") },
                 leadingIcon = {
                     Icon(
@@ -115,6 +136,29 @@ fun HomeScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
             )
+
+            // Suggestions dropdown
+            if (searchQuery.isNotBlank()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    suggestions.forEach { (label, _, categoryKey) ->
+                        Text(
+                            text = label,
+                            fontSize = 16.sp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    onCategoryClick(categoryKey)
+                                    searchQuery = ""
+                                }
+                                .padding(vertical = 8.dp)
+                        )
+                    }
+                }
+            }
 
             // Category Title
             Row(
@@ -136,18 +180,7 @@ fun HomeScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp)) // Space between Categories and grid
-
             // Category Grid
-            val categories = listOf(
-                Triple("General Health", R.drawable.ic_general_health, "General Health"),
-                Triple("Mental Health", R.drawable.ic_mental_health, "Mental Health"),
-                Triple("Dental Camp", R.drawable.ic_dental_camp, "Dental Camp"),
-                Triple("Skin Health", R.drawable.ic_skin_health, "Skin Health"),
-                Triple("Immunization", R.drawable.ic_immunization, "Vaccination"),
-                Triple("Women's Health", R.drawable.ic_women_health, "Women’s Health")
-            )
-
             Column(
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
@@ -160,15 +193,13 @@ fun HomeScreen(
                             .padding(vertical = if (index == 0) 20.dp else 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        row.forEach { (label, icon, _) ->
+                        row.forEach { (label, icon, categoryKey) ->
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 modifier = Modifier
                                     .weight(1f)
                                     .clickable {
-                                        Toast
-                                            .makeText(context, "$label clicked", Toast.LENGTH_SHORT)
-                                            .show()
+                                        onCategoryClick(categoryKey)
                                     }
                             ) {
                                 Card(

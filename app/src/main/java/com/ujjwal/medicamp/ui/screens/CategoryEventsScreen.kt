@@ -1,13 +1,17 @@
-package com.ujjwal.medicamp.ui.components
+package com.ujjwal.medicamp.ui.screens
 
+import android.content.Intent
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -16,15 +20,100 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ujjwal.medicamp.R
 import com.ujjwal.medicamp.model.Event
+import com.ujjwal.medicamp.ui.components.BottomNavigationBar
+import com.ujjwal.medicamp.utils.EmailUtils
+import com.ujjwal.medicamp.viewmodel.EventViewModel
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CategoryEventsScreen(
+    categoryName: String,
+    viewModel: EventViewModel,
+    onEventClick: (event: Event) -> Unit = {},
+    onBack: () -> Unit = {},
+    onHomeClick: () -> Unit = {},
+    onSavedClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {}
+) {
+    val context = LocalContext.current
+    val events by viewModel.allEvents.collectAsState()
+    val filteredEvents = events.filter {
+        it.category.equals(categoryName, ignoreCase = true)
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(" $categoryName") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                }
+            )
+        },
+        bottomBar = {
+            BottomNavigationBar(
+                onHomeClick = onHomeClick,
+                onSavedClick = onSavedClick,
+                onProfileClick = onProfileClick
+            )
+        }
+    ) { padding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        listOf(Color(0xFF34ebde).copy(alpha = 0.5f), Color.White)
+                    )
+                )
+                .padding(padding)
+        ) {
+            if (filteredEvents.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "No events found in this category.")
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
+                    items(filteredEvents) { event ->
+                        EventItemCard(
+                            event = event,
+                            onShare = {
+                                val emailIntent = EmailUtils.createEmailIntent(context, event)
+                                emailIntent?.let {
+                                    context.startActivity(Intent.createChooser(it, "Share via"))
+                                }
+                            },
+                            onClick = { onEventClick(event) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Composable
-fun SavedEventCard(
+fun EventItemCard(
     event: Event,
     onShare: () -> Unit,
     onClick: () -> Unit

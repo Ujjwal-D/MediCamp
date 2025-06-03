@@ -3,9 +3,9 @@ package com.ujjwal.medicamp.repository
 import com.ujjwal.medicamp.db.EventDao
 import com.ujjwal.medicamp.model.Event
 import com.ujjwal.medicamp.model.UserAuth
+import com.ujjwal.medicamp.model.UserProfile
 import com.ujjwal.medicamp.network.RetrofitClient
 import com.ujjwal.medicamp.network.dto.EventDto
-import com.ujjwal.medicamp.model.UserProfile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -16,7 +16,6 @@ class EventRepository(private val dao: EventDao) {
 
     val allEvents: Flow<List<Event>> = dao.getAllEvents()
     val savedEvents: Flow<List<Event>> = dao.getSavedEvents()
-
 
     suspend fun insertSeedIfEmpty(seed: List<Event>) {
         if (dao.getCount() == 0) {
@@ -31,6 +30,16 @@ class EventRepository(private val dao: EventDao) {
     suspend fun authenticateUser(username: String, passwordHash: String): Boolean {
         val user = dao.getUser(username)
         return user?.passwordHash == passwordHash
+    }
+
+    suspend fun changePassword(username: String, oldHash: String, newHash: String): Boolean {
+        val user = dao.getUser(username)
+        return if (user?.passwordHash == oldHash) {
+            dao.updatePassword(username, newHash)
+            true
+        } else {
+            false
+        }
     }
 
     suspend fun syncRemoteToLocal() {

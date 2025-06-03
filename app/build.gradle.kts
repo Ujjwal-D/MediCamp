@@ -70,6 +70,10 @@ dependencies {
     ksp("androidx.room:room-compiler:2.5.0")
     implementation("androidx.room:room-ktx:2.7.1")
 
+    // Google Maps Compose support
+    implementation("com.google.maps.android:maps-compose:2.11.4")
+
+
     // Lifecycle (ViewModel, LiveData)
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")

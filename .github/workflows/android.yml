@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      MAPS_API: ${{ secrets.MAPS_API }}  # This is your GitHub secret
+      MAPS_API: ${{ secrets.mapsApiKey }}  # This is your GitHub secret
 
     steps:
       - name: Checkout code
@@ -24,7 +24,7 @@ jobs:
           java-version: '17'  # Change if you're using a different Java version
 
       - name: Create local.properties
-        run: echo "MAPS_API=${MAPS_API}" >> local.properties
+        run: echo "mapsApiKey=${mapsApiKey}" >> local.properties
 
       - name: Grant permissions to Gradle wrapper
         run: chmod +x ./gradlew

@@ -29,6 +29,8 @@ class EventViewModel(application: Application) : AndroidViewModel(application) {
     private var _isLoggedIn = mutableStateOf(false)
     val isLoggedIn: State<Boolean> = _isLoggedIn
 
+    private var _loggedInUsername: String? = null
+
     init {
         val dao = EventDatabase.getDatabase(application).eventDao()
         repository = EventRepository(dao)
@@ -79,6 +81,7 @@ class EventViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val hash = hashPassword(password)
             if (repository.authenticateUser(username, hash)) {
+                _loggedInUsername = username
                 _isLoggedIn.value = true
                 onSuccess()
             } else {
@@ -92,6 +95,7 @@ class EventViewModel(application: Application) : AndroidViewModel(application) {
             val hash = hashPassword(password)
             try {
                 repository.registerUser(UserAuth(username, hash))
+                _loggedInUsername = username
                 _isLoggedIn.value = true
                 onSuccess()
             } catch (e: Exception) {
@@ -102,6 +106,35 @@ class EventViewModel(application: Application) : AndroidViewModel(application) {
 
     fun logout() {
         _isLoggedIn.value = false
+        _loggedInUsername = null
+    }
+
+    fun changePassword(
+        oldPassword: String,
+        newPassword: String,
+        onSuccess: () -> Unit,
+        onFail: () -> Unit
+    ) {
+        val username = _loggedInUsername
+        if (username == null) {
+            onFail()
+            return
+        }
+
+        viewModelScope.launch {
+            val oldHash = hashPassword(oldPassword)
+            val newHash = hashPassword(newPassword)
+            val result = repository.changePassword(username, oldHash, newHash)
+            if (result) {
+                onSuccess()
+            } else {
+                onFail()
+            }
+        }
+    }
+
+    fun getLoggedInUsername(): String? {
+        return _loggedInUsername
     }
 
     private fun hashPassword(password: String): String {

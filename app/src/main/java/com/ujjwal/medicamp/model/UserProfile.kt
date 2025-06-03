@@ -9,5 +9,6 @@ data class UserProfile(
     @PrimaryKey val id: String = "singleton_user",
     val fullName: String,
     val email: String,
-    val phone: String
+    val phone: String,
+    val imageBase64: String? = null
 ) : Serializable

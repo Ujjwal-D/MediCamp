@@ -16,6 +16,7 @@ data class Event(
     val lon: Double,
     val date: String = "",
     val time: String = "",
+    val phone: String = "",
+    val email: String = "",
     val isSaved: Boolean = false
 ) : Serializable
-

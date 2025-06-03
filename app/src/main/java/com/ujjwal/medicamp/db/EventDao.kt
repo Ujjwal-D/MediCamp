@@ -36,4 +36,7 @@ interface EventDao {
     @Query("SELECT * FROM user_auth WHERE username = :username")
     suspend fun getUser(username: String): UserAuth?
 
+    // method to change password securely
+    @Query("UPDATE user_auth SET passwordHash = :newHash WHERE username = :username")
+    suspend fun updatePassword(username: String, newHash: String)
 }

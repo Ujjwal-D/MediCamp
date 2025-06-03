@@ -19,8 +19,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.*
 import com.ujjwal.medicamp.R
 import com.ujjwal.medicamp.model.Event
+import com.ujjwal.medicamp.ui.components.BottomNavigationBar
 import com.ujjwal.medicamp.utils.EmailUtils
 import com.ujjwal.medicamp.viewmodel.EventViewModel
 
@@ -28,7 +32,10 @@ import com.ujjwal.medicamp.viewmodel.EventViewModel
 fun EventDetailScreen(
     event: Event,
     viewModel: EventViewModel,
-    onBack: () -> Unit = {}
+    onBack: () -> Unit = {},
+    onHomeClick: () -> Unit = {},
+    onSavedClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
     var isSaved by remember { mutableStateOf(event.isSaved) }
@@ -43,18 +50,32 @@ fun EventDetailScreen(
         else -> "Free health camp with on-site professionals. Walk-ins welcome."
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    listOf(Color(0xFFC7F2FF), Color(0xFF4DBFE9))
-                )
-            )
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+    val location = LatLng(event.lat, event.lon)
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(location, 12f)
+    }
 
-            // Top Bar
+    Scaffold(
+        bottomBar = {
+            BottomNavigationBar(
+                onHomeClick = onHomeClick,
+                onSavedClick = onSavedClick,
+                onProfileClick = onProfileClick
+            )
+        },
+        containerColor = Color.Transparent
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        listOf(Color(0xFF34ebde).copy(alpha = 0.5f), Color.White)
+                    )
+                )
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp, vertical = 16.dp)
+        ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -63,42 +84,51 @@ fun EventDetailScreen(
             ) {
                 IconButton(onClick = onBack) {
                     Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
                     text = event.category,
                     color = Color(0xFF1976D2),
                     fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(modifier = Modifier.weight(1f))
             }
 
             Text(
                 text = event.title,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
+                fontWeight = MaterialTheme.typography.titleLarge.fontWeight,
+                fontSize = 20.sp,
+                color = Color(0xFF212121),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
             Text(
                 text = event.location,
-                fontSize = 14.sp,
-                modifier = Modifier.padding(bottom = 12.dp)
+                fontSize = 16.sp,
+                color = Color(0xFF212121),
+                modifier = Modifier.padding(bottom = 8.dp)
             )
 
             Text(
                 text = event.description.ifBlank { defaultDescription },
-                fontSize = 14.sp,
+                fontSize = 16.sp,
+                color = Color(0xFF212121),
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
+            Text("Contact", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black)
+            Spacer(modifier = Modifier.height(6.dp))
+            Text("☎ ${event.phone}", fontSize = 15.sp, color = Color(0xFF212121))
+            Text("📧 ${event.email}", fontSize = 15.sp, color = Color(0xFF212121))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Share row
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Share with others", fontWeight = FontWeight.Medium)
+                Text("Share with others", fontSize = 16.sp, color = Color(0xFF1976D2))
                 Spacer(modifier = Modifier.weight(1f))
                 IconButton(onClick = {
                     val emailIntent = EmailUtils.createEmailIntent(context, event)
@@ -106,39 +136,38 @@ fun EventDetailScreen(
                         context.startActivity(Intent.createChooser(it, "Share via"))
                     }
                 }) {
-                    Icon(Icons.Default.Share, contentDescription = "Share")
+                    Icon(Icons.Default.Share, contentDescription = "Share", tint = Color(0xFF0288D1))
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Map Preview
+            // Map Card
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(220.dp)
-                    .clickable {
-                        val intent = Intent(context, MapActivity::class.java)
-                        intent.putExtra("event", event)
-                        context.startActivity(intent)
-                    },
-                shape = RoundedCornerShape(16.dp)
+                    .height(240.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
-                Box(
+                GoogleMap(
                     modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                    cameraPositionState = cameraPositionState,
+                    properties = MapProperties(
+                        isMyLocationEnabled = false,
+                        mapType = MapType.NORMAL
+                    )
                 ) {
-                    Text(
-                        text = "Tap to view on map",
-                        color = Color.Gray,
-                        fontSize = 14.sp
+                    Marker(
+                        state = MarkerState(position = location),
+                        title = event.title
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Save/Unsave Button
+            // Save Button
             Button(
                 onClick = {
                     val newSavedState = !isSaved
@@ -160,6 +189,7 @@ fun EventDetailScreen(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = if (isSaved) "Saved" else "Save",
+                    fontSize = 16.sp,
                     color = Color(0xFF1976D2)
                 )
             }

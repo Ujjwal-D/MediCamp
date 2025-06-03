@@ -10,7 +10,7 @@ import com.ujjwal.medicamp.model.UserProfile
 
 @Database(
     entities = [Event::class, UserProfile::class, UserAuth::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class EventDatabase : RoomDatabase() {

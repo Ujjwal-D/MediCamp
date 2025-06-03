@@ -1,56 +1,309 @@
 package com.ujjwal.medicamp.utils
 
 import com.ujjwal.medicamp.model.Event
+import java.util.*
 
 object SeedData {
     fun defaultEvents(): List<Event> = listOf(
         Event(
-            title = "Wandal Skin Cancer Camp",
-            category = "Skin Health",
-            description = "",
-            location = "Wandal Road, Wandal, Rockhampton",
-            lat = -23.3754,
-            lon = 150.4826
-        ),
-        Event(
-            title = "Free Mental Wellness Check",
+            title = "Community Mental Event 1",
             category = "Mental Health",
-            description = "",
+            description = "A free mental health event aimed to serve the local community.",
             location = "MindSpace Center, Melbourne",
             lat = -37.8136,
-            lon = 144.9631
+            lon = 144.9631,
+            date = "2025-06-10",
+            time = "12:30 AM",
+            phone = "4694-5349",
+            email = "rebecca22@orr.com.au"
         ),
         Event(
-            title = "Dental Hygiene Camp",
+            title = "Free Mental Event 2",
+            category = "Mental Health",
+            description = "A free mental health event aimed to serve the local community.",
+            location = "Mindful Minds Center, Sydney",
+            lat = -33.8688,
+            lon = 151.2093,
+            date = "2025-06-11",
+            time = "14:30 AM",
+            phone = "(03).6960.8354",
+            email = "rebeccachang@george-warner.org"
+        ),
+        Event(
+            title = "Community Mental Event 3",
+            category = "Mental Health",
+            description = "A free mental health event aimed to serve the local community.",
+            location = "CalmLife Brisbane",
+            lat = -27.4705,
+            lon = 153.026,
+            date = "2025-06-12",
+            time = "10:00 AM",
+            phone = "0439.554.939",
+            email = "ryan89@duncan.org"
+        ),
+        Event(
+            title = "Free Mental Event 4",
+            category = "Mental Health",
+            description = "A free mental health event aimed to serve the local community.",
+            location = "Adelaide Health Campus",
+            lat = -34.9285,
+            lon = 138.6007,
+            date = "2025-06-13",
+            time = "16:00 AM",
+            phone = "4078 7894",
+            email = "ramseyelijah@parker-suarez.net"
+        ),
+        Event(
+            title = "Community Mental Event 5",
+            category = "Mental Health",
+            description = "A free mental health event aimed to serve the local community.",
+            location = "Darwin Community Hall",
+            lat = -12.4634,
+            lon = 130.8456,
+            date = "2025-06-14",
+            time = "13:00 AM",
+            phone = "+61-7-9470-4064",
+            email = "jerryreed@douglas.biz"
+        ),
+        Event(
+            title = "Local Dental Event 1",
             category = "Dental Camp",
-            description = "",
+            description = "A free dental camp event aimed to serve the local community.",
             location = "SmileCare Clinic, Adelaide",
             lat = -34.9285,
-            lon = 138.6007
+            lon = 138.6007,
+            date = "2025-06-10",
+            time = "10:00 AM",
+            phone = "34201347",
+            email = "davisjeremy@petersen.com.au"
         ),
         Event(
-            title = "General Health Screening",
+            title = "Public Dental Event 2",
+            category = "Dental Camp",
+            description = "A free dental camp event aimed to serve the local community.",
+            location = "ToothWise Melbourne",
+            lat = -37.8136,
+            lon = 144.9631,
+            date = "2025-06-11",
+            time = "11:00 AM",
+            phone = "08.2776.9771",
+            email = "ebrowning@hudson.info"
+        ),
+        Event(
+            title = "Community Dental Event 3",
+            category = "Dental Camp",
+            description = "A free dental camp event aimed to serve the local community.",
+            location = "Happy Teeth Sydney",
+            lat = -33.8688,
+            lon = 151.2093,
+            date = "2025-06-12",
+            time = "13:30 AM",
+            phone = "0254022467",
+            email = "ncook@campbell-dunn.net.au"
+        ),
+        Event(
+            title = "Public Dental Event 4",
+            category = "Dental Camp",
+            description = "A free dental camp event aimed to serve the local community.",
+            location = "Canberra Dental Hospital",
+            lat = -35.2809,
+            lon = 149.13,
+            date = "2025-06-13",
+            time = "12:00 AM",
+            phone = "(08) 6442 7321",
+            email = "matthewclements@gilbert-thornton.org"
+        ),
+        Event(
+            title = "Local General Event 1",
             category = "General Health",
-            description = "",
+            description = "A free general health event aimed to serve the local community.",
             location = "Brisbane City Health Center",
             lat = -27.4698,
-            lon = 153.0251
+            lon = 153.0251,
+            date = "2025-06-10",
+            time = "12:00 AM",
+            phone = "0480-549-562",
+            email = "shannonjustin@hawkins.org"
         ),
         Event(
-            title = "Child Immunization Drive",
+            title = "Community General Event 2",
+            category = "General Health",
+            description = "A free general health event aimed to serve the local community.",
+            location = "HealthyU Melbourne",
+            lat = -37.814,
+            lon = 144.96332,
+            date = "2025-06-11",
+            time = "14:30 AM",
+            phone = "0431-548-708",
+            email = "gwilliams@dickson-stevenson.net"
+        ),
+        Event(
+            title = "Community General Event 3",
+            category = "General Health",
+            description = "A free general health event aimed to serve the local community.",
+            location = "CheckUp Darwin",
+            lat = -12.4634,
+            lon = 130.8456,
+            date = "2025-06-12",
+            time = "9:30 AM",
+            phone = "+61.3.4163.4555",
+            email = "shaneparker@kelley.com"
+        ),
+        Event(
+            title = "Community General Event 4",
+            category = "General Health",
+            description = "A free general health event aimed to serve the local community.",
+            location = "Townsville Health Center",
+            lat = -19.25896,
+            lon = 146.81695,
+            date = "2025-06-13",
+            time = "11:00 AM",
+            phone = "0460-006-384",
+            email = "elizabethbrooks@hudson.info"
+        ),
+        Event(
+            title = "Free Immunization Event 1",
             category = "Immunization",
-            description = "",
+            description = "A free immunization event aimed to serve the local community.",
             location = "Westmead Hospital, Sydney",
             lat = -33.8036,
-            lon = 150.9886
+            lon = 150.9886,
+            date = "2025-06-10",
+            time = "15:00 AM",
+            phone = "12415819",
+            email = "stewartbrittany@walsh-chang.net.au"
         ),
         Event(
-            title = "Women’s Health Awareness",
+            title = "Free Immunization Event 2",
+            category = "Immunization",
+            description = "A free immunization event aimed to serve the local community.",
+            location = "ACT Health Center",
+            lat = -35.2809,
+            lon = 149.13,
+            date = "2025-06-11",
+            time = "9:30 AM",
+            phone = "3760 7626",
+            email = "ihartman@ritter.info"
+        ),
+        Event(
+            title = "Community Immunization Event 3",
+            category = "Immunization",
+            description = "A free immunization event aimed to serve the local community.",
+            location = "Gold Coast Clinic",
+            lat = -28.0167,
+            lon = 153.4,
+            date = "2025-06-12",
+            time = "15:30 AM",
+            phone = "+61830038871",
+            email = "zpatel@mckay-turner.edu"
+        ),
+        Event(
+            title = "Local Immunization Event 4",
+            category = "Immunization",
+            description = "A free immunization event aimed to serve the local community.",
+            location = "Perth Youth Hall",
+            lat = -31.9505,
+            lon = 115.8605,
+            date = "2025-06-13",
+            time = "11:30 AM",
+            phone = "1802 5764",
+            email = "kimscott@gutierrez.edu.au"
+        ),
+        Event(
+            title = "Local Women’s Event 1",
             category = "Women’s Health",
-            description = "",
+            description = "A free women’s health event aimed to serve the local community.",
             location = "St. Mary's Clinic, Hobart",
             lat = -42.8821,
-            lon = 147.3272
+            lon = 147.3272,
+            date = "2025-06-10",
+            time = "15:00 AM",
+            phone = "08.4964.8897",
+            email = "elliottnicole@frazier.edu"
+        ),
+        Event(
+            title = "Community Women’s Event 2",
+            category = "Women’s Health",
+            description = "A free women’s health event aimed to serve the local community.",
+            location = "Brisbane Women’s Hospital",
+            lat = -27.4679,
+            lon = 153.0281,
+            date = "2025-06-11",
+            time = "10:00 AM",
+            phone = "03.9310.3632",
+            email = "william75@brewer.com"
+        ),
+        Event(
+            title = "Local Women’s Event 3",
+            category = "Women’s Health",
+            description = "A free women’s health event aimed to serve the local community.",
+            location = "Cairns Medical Centre",
+            lat = -16.9203,
+            lon = 145.77,
+            date = "2025-06-12",
+            time = "15:30 AM",
+            phone = "02.2861.4230",
+            email = "amandawilliams@green.info"
+        ),
+        Event(
+            title = "Free Women’s Event 4",
+            category = "Women’s Health",
+            description = "A free women’s health event aimed to serve the local community.",
+            location = "Wollongong Women Hub",
+            lat = -34.4278,
+            lon = 150.8931,
+            date = "2025-06-13",
+            time = "15:00 AM",
+            phone = "+61.2.6528.3929",
+            email = "tonya67@little.edu.au"
+        ),
+        Event(
+            title = "Free Skin Event 1",
+            category = "Skin Health",
+            description = "A free skin health event aimed to serve the local community.",
+            location = "Wandal Road, Wandal, Rockhampton",
+            lat = -23.3754,
+            lon = 150.4826,
+            date = "2025-06-10",
+            time = "9:00 AM",
+            phone = "+61 426 422 902",
+            email = "ihowe@ryan.edu"
+        ),
+        Event(
+            title = "Local Skin Event 2",
+            category = "Skin Health",
+            description = "A free skin health event aimed to serve the local community.",
+            location = "SunSkin Clinic, Perth",
+            lat = -31.9505,
+            lon = 115.8605,
+            date = "2025-06-11",
+            time = "11:00 AM",
+            phone = "(08)36159401",
+            email = "newtonpenny@rodriguez.net.au"
+        ),
+        Event(
+            title = "Community Skin Event 3",
+            category = "Skin Health",
+            description = "A free skin health event aimed to serve the local community.",
+            location = "Darwin Health Arena",
+            lat = -12.4634,
+            lon = 130.8456,
+            date = "2025-06-12",
+            time = "13:30 AM",
+            phone = "0822-3761",
+            email = "renee78@price.org.au"
+        ),
+        Event(
+            title = "Free Skin Event 4",
+            category = "Skin Health",
+            description = "A free skin health event aimed to serve the local community.",
+            location = "Melbourne Skin Institute",
+            lat = -37.8136,
+            lon = 144.9631,
+            date = "2025-06-13",
+            time = "10:30 AM",
+            phone = "(02).2799.5856",
+            email = "ophillips@carpenter.info"
         )
     )
 }
