@@ -47,6 +47,10 @@ class EventRepository(private val dao: EventDao) {
         dao.insertAll(events)
     }
 
+    suspend fun clearSavedStatusForAllEvents() {
+        dao.clearAllSavedEvents()
+    }
+
     suspend fun markEventSaved(id: String, isSaved: Boolean) {
         dao.updateIsSaved(id, isSaved)
     }
@@ -68,12 +72,17 @@ class EventRepository(private val dao: EventDao) {
                 response.events.map { dto: EventDto ->
                     Event(
                         id = dto.id,
-                        title = "Health Camp - ${dto.price}",
-                        category = "General",
-                        description = dto.phone,
-                        location = dto.address,
+                        title = dto.title,
+                        category = dto.category,
+                        description = dto.description,
+                        location = dto.location,
                         lat = dto.lat,
-                        lon = dto.lon
+                        lon = dto.lon,
+                        date = dto.date,
+                        time = dto.time,
+                        phone = dto.phone,
+                        email = dto.email,
+                        isSaved = dto.isSaved
                     )
                 }
             } catch (e: IOException) {

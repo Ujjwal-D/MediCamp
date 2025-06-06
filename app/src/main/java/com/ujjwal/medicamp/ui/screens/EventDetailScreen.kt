@@ -83,7 +83,10 @@ fun EventDetailScreen(
                     .padding(bottom = 16.dp)
             ) {
                 IconButton(onClick = onBack) {
-                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back"
+                    )
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
@@ -136,7 +139,11 @@ fun EventDetailScreen(
                         context.startActivity(Intent.createChooser(it, "Share via"))
                     }
                 }) {
-                    Icon(Icons.Default.Share, contentDescription = "Share", tint = Color(0xFF0288D1))
+                    Icon(
+                        Icons.Default.Share,
+                        contentDescription = "Share",
+                        tint = Color(0xFF0288D1)
+                    )
                 }
             }
 

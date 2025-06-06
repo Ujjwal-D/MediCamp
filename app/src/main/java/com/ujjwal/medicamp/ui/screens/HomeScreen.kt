@@ -34,7 +34,9 @@ fun HomeScreen(
     onCategoryClick: (String) -> Unit
 ) {
     val profile by viewModel.userProfile.collectAsState()
-    val userName = profile?.fullName?.takeIf { it.isNotBlank() } ?: "Guest"
+    val username by viewModel.usernameState
+    val userName =
+        if (profile?.fullName.isNullOrBlank()) username ?: "Guest" else profile?.fullName!!
 
     val currentHour = remember { Calendar.getInstance().get(Calendar.HOUR_OF_DAY) }
     val greeting = when (currentHour) {
@@ -67,7 +69,14 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Brush.verticalGradient(listOf(Color(0xFF34ebde).copy(alpha = 0.5f), Color.White)))
+                .background(
+                    Brush.verticalGradient(
+                        listOf(
+                            Color(0xFF34ebde).copy(alpha = 0.5f),
+                            Color.White
+                        )
+                    )
+                )
                 .padding(paddingValues)
         ) {
             // Banner
@@ -105,7 +114,12 @@ fun HomeScreen(
                 Text(
                     text = buildAnnotatedString {
                         append("$greeting ")
-                        withStyle(SpanStyle(color = Color(0xFF1976D2), fontWeight = FontWeight.Bold)) {
+                        withStyle(
+                            SpanStyle(
+                                color = Color(0xFF1976D2),
+                                fontWeight = FontWeight.Bold
+                            )
+                        ) {
                             append(userName)
                         }
                     },

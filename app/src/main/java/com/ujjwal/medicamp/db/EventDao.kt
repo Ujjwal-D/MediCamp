@@ -39,4 +39,8 @@ interface EventDao {
     // method to change password securely
     @Query("UPDATE user_auth SET passwordHash = :newHash WHERE username = :username")
     suspend fun updatePassword(username: String, newHash: String)
+
+    @Query("UPDATE events SET isSaved = 0")
+    suspend fun clearAllSavedEvents()
+
 }

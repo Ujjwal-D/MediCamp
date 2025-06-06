@@ -74,7 +74,12 @@ fun SavedEventCard(
                         .padding(vertical = 8.dp)
                 ) {
                     val (month, day) = extractMonthDay(event.date)
-                    Text(text = month, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1976D2))
+                    Text(
+                        text = month,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1976D2)
+                    )
                     Text(text = day, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
 

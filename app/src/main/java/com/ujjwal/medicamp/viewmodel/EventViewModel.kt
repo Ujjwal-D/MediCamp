@@ -30,11 +30,14 @@ class EventViewModel(application: Application) : AndroidViewModel(application) {
     val isLoggedIn: State<Boolean> = _isLoggedIn
 
     private var _loggedInUsername: String? = null
+    private val _usernameState = mutableStateOf<String?>(null)
+    val usernameState: State<String?> = _usernameState
 
     init {
         val dao = EventDatabase.getDatabase(application).eventDao()
         repository = EventRepository(dao)
 
+        // Observe event and profile data from DB
         allEvents = repository.allEvents
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -44,6 +47,7 @@ class EventViewModel(application: Application) : AndroidViewModel(application) {
         userProfile = repository.getUserProfile()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
+        // Initial data operations
         seedIfEmpty()
         syncFromServer()
     }
@@ -77,12 +81,15 @@ class EventViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    // Handles login with password hash match
     fun login(username: String, password: String, onSuccess: () -> Unit, onFail: () -> Unit) {
         viewModelScope.launch {
             val hash = hashPassword(password)
             if (repository.authenticateUser(username, hash)) {
                 _loggedInUsername = username
                 _isLoggedIn.value = true
+                _usernameState.value = username
+                repository.clearSavedStatusForAllEvents()
                 onSuccess()
             } else {
                 onFail()
@@ -90,6 +97,7 @@ class EventViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    // Handles signup and sets login state
     fun signup(username: String, password: String, onSuccess: () -> Unit, onFail: () -> Unit) {
         viewModelScope.launch {
             val hash = hashPassword(password)
@@ -97,6 +105,7 @@ class EventViewModel(application: Application) : AndroidViewModel(application) {
                 repository.registerUser(UserAuth(username, hash))
                 _loggedInUsername = username
                 _isLoggedIn.value = true
+                _usernameState.value = username
                 onSuccess()
             } catch (e: Exception) {
                 onFail()
@@ -104,11 +113,14 @@ class EventViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    // Handles logout logic
     fun logout() {
         _isLoggedIn.value = false
         _loggedInUsername = null
+        _usernameState.value = null
     }
 
+    // Updates password if old hash matches
     fun changePassword(
         oldPassword: String,
         newPassword: String,
@@ -137,6 +149,7 @@ class EventViewModel(application: Application) : AndroidViewModel(application) {
         return _loggedInUsername
     }
 
+    // Utility to hash password using SHA-256
     private fun hashPassword(password: String): String {
         val bytes = password.toByteArray()
         val digest = MessageDigest.getInstance("SHA-256")

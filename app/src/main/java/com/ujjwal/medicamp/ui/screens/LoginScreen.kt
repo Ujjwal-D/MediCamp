@@ -1,5 +1,7 @@
 package com.ujjwal.medicamp.ui.screens
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -19,17 +21,24 @@ import androidx.compose.ui.unit.sp
 import com.ujjwal.medicamp.R
 import com.ujjwal.medicamp.viewmodel.EventViewModel
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun LoginScreen(
     viewModel: EventViewModel,
     onAuthSuccess: () -> Unit = {},
     onForgotPasswordClick: () -> Unit = {}
 ) {
+    // State variables for login/signup inputs
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
     var isSignupMode by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    // State for forgot password dialog
+    var showResetDialog by remember { mutableStateOf(false) }
+    var resetEmail by remember { mutableStateOf("") }
+    var resetSent by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -42,20 +51,21 @@ fun LoginScreen(
             .padding(24.dp)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(vertical = 40.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
+            // App Title
             Text(
                 text = "MediCamp",
-                fontSize = 36.sp,
+                fontSize = 40.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1976D2)
             )
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
+            // Username/Email Field
             OutlinedTextField(
                 value = username,
                 onValueChange = { username = it },
@@ -63,46 +73,56 @@ fun LoginScreen(
                 leadingIcon = {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_person),
-                        contentDescription = "User Icon"
+                        contentDescription = "User Icon",
+                        modifier = Modifier.size(30.dp)
                     )
                 },
                 singleLine = true,
+                textStyle = LocalTextStyle.current.copy(fontSize = 18.sp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 6.dp)
+                    .padding(vertical = 8.dp)
             )
 
+            // Password Field
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
+                onValueChange = {
+                    password = it
+                    if (isSignupMode && password.length < 6) {
+                        errorMessage = "Password must be at least 6 characters long"
+                    } else {
+                        errorMessage = null
+                    }
+                },
                 placeholder = { Text("Password") },
                 leadingIcon = {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_lock),
-                        contentDescription = "Password Icon"
+                        contentDescription = "Password Icon",
+                        modifier = Modifier.size(30.dp)
                     )
                 },
                 trailingIcon = {
                     IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
                         Icon(
                             painter = painterResource(
-                                id = if (isPasswordVisible)
-                                    R.drawable.ic_visibility
-                                else
-                                    R.drawable.ic_visibility_off
+                                id = if (isPasswordVisible) R.drawable.ic_visibility else R.drawable.ic_visibility_off
                             ),
-                            contentDescription = "Toggle Password Visibility"
+                            contentDescription = "Toggle Password Visibility",
+                            modifier = Modifier.size(26.dp)
                         )
                     }
                 },
-                visualTransformation = if (isPasswordVisible)
-                    VisualTransformation.None else PasswordVisualTransformation(),
+                visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 singleLine = true,
+                textStyle = LocalTextStyle.current.copy(fontSize = 18.sp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 6.dp)
+                    .padding(vertical = 8.dp)
             )
 
+            // Forgot Password link (only for login mode)
             if (!isSignupMode) {
                 Box(
                     modifier = Modifier
@@ -114,89 +134,115 @@ fun LoginScreen(
                         text = "Forgot Password?",
                         fontSize = 14.sp,
                         color = Color(0xFF1976D2),
-                        modifier = Modifier.clickable { onForgotPasswordClick() }
-                    )
+                        modifier = Modifier.clickable { showResetDialog = true })
                 }
             }
 
+            // Display error message if any
             errorMessage?.let {
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(text = it, color = Color.Red, fontSize = 14.sp)
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
+            // Login/Signup button
             Button(
                 onClick = {
                     if (username.isBlank() || password.isBlank()) {
                         errorMessage = "Username and password cannot be empty"
                         return@Button
                     }
+                    if (isSignupMode && password.length < 6) {
+                        errorMessage = "Password must be at least 6 characters long"
+                        return@Button
+                    }
                     if (isSignupMode) {
-                        viewModel.signup(
-                            username.trim(),
-                            password.trim(),
-                            onSuccess = {
-                                errorMessage = null
-                                isSignupMode = false
-                            },
-                            onFail = {
-                                errorMessage = "Signup failed"
-                            }
-                        )
+                        viewModel.signup(username.trim(), password.trim(), onSuccess = {
+                            errorMessage = null
+                            isSignupMode = false
+                        }, onFail = {
+                            errorMessage = "Signup failed"
+                        })
                     } else {
-                        viewModel.login(
-                            username.trim(),
-                            password.trim(),
-                            onSuccess = {
-                                errorMessage = null
-                                onAuthSuccess()
-                            },
-                            onFail = {
-                                errorMessage = "Invalid credentials"
-                            }
-                        )
+                        viewModel.login(username.trim(), password.trim(), onSuccess = {
+                            errorMessage = null
+                            onAuthSuccess()
+                        }, onFail = {
+                            errorMessage = "Invalid credentials"
+                        })
                     }
                 },
                 shape = RoundedCornerShape(30.dp),
-                colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.Transparent),
-                border = ButtonDefaults.outlinedButtonBorder(enabled = true),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2)),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp)
+                    .height(50.dp)
             ) {
                 Text(
                     text = if (isSignupMode) "Sign Up" else "Login",
-                    fontSize = 16.sp,
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF1976D2)
+                    color = Color.White
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            Row {
-                Text(
-                    text = if (isSignupMode) "Already have an account? " else "Don’t have an account? "
-                )
-                Text(
-                    text = if (isSignupMode) "Login" else "Sign Up",
-                    color = Color(0xFF1976D2),
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.clickable { isSignupMode = !isSignupMode }
-                )
+            // Toggle between login and signup modes with animation
+            AnimatedContent(targetState = isSignupMode, label = "auth toggle") { signup ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = if (signup) "Already have an account? " else "Don’t have an account? ",
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        text = if (signup) "Login" else "Sign Up",
+                        color = Color(0xFF1976D2),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        modifier = Modifier.clickable { isSignupMode = !isSignupMode })
+                }
             }
+        }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                HorizontalDivider(modifier = Modifier.weight(1f))
-                Text("  OR  ", fontWeight = FontWeight.SemiBold, color = Color.Gray)
-                HorizontalDivider(modifier = Modifier.weight(1f))
-            }
+        // Forgot Password Dialog logic
+        if (showResetDialog) {
+            AlertDialog(onDismissRequest = {
+                showResetDialog = false
+                resetSent = false
+                resetEmail = ""
+            }, title = { Text("Reset Password") }, text = {
+                if (resetSent) {
+                    Text("Reset instructions sent to $resetEmail")
+                } else {
+                    OutlinedTextField(
+                        value = resetEmail,
+                        onValueChange = { resetEmail = it },
+                        placeholder = { Text("Enter your email or username") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }, confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (resetEmail.isNotBlank()) {
+                            resetSent = true
+                        }
+                    }) {
+                    Text(if (resetSent) "OK" else "Send")
+                }
+            }, dismissButton = {
+                if (!resetSent) {
+                    TextButton(onClick = {
+                        showResetDialog = false
+                        resetEmail = ""
+                    }) {
+                        Text("Cancel")
+                    }
+                }
+            })
         }
     }
 }

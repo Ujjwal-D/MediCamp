@@ -1,5 +1,6 @@
 package com.ujjwal.medicamp.ui.screens
 
+import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Base64
@@ -62,16 +63,20 @@ fun ProfileScreen(
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var encodedImage by remember { mutableStateOf(savedProfile?.imageBase64) }
 
-    val imagePickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        selectedImageUri = uri
-        uri?.let {
-            val inputStream = context.contentResolver.openInputStream(it)
-            val bytes = inputStream?.readBytes()
-            if (bytes != null) {
-                encodedImage = Base64.encodeToString(bytes, Base64.DEFAULT)
+    val username by viewModel.usernameState
+    val nameToShow =
+        if (savedProfile?.fullName.isNullOrBlank()) username else savedProfile?.fullName
+    val imagePickerLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            selectedImageUri = uri
+            uri?.let {
+                val inputStream = context.contentResolver.openInputStream(it)
+                val bytes = inputStream?.readBytes()
+                if (bytes != null) {
+                    encodedImage = Base64.encodeToString(bytes, Base64.DEFAULT)
+                }
             }
         }
-    }
 
     Scaffold(
         bottomBar = {
@@ -134,17 +139,28 @@ fun ProfileScreen(
                 ) {
                     when {
                         selectedImageUri != null -> {
-                            val inputStream = context.contentResolver.openInputStream(selectedImageUri!!)
+                            val inputStream =
+                                context.contentResolver.openInputStream(selectedImageUri!!)
                             val bitmap = BitmapFactory.decodeStream(inputStream)
                             bitmap?.let {
-                                Image(bitmap = it.asImageBitmap(), contentDescription = null, modifier = Modifier.fillMaxSize())
+                                Image(
+                                    bitmap = it.asImageBitmap(),
+                                    contentDescription = null,
+                                    modifier = Modifier.fillMaxSize()
+                                )
                             }
                         }
+
                         !encodedImage.isNullOrBlank() -> {
                             val decoded = Base64.decode(encodedImage, Base64.DEFAULT)
                             val bmp = BitmapFactory.decodeByteArray(decoded, 0, decoded.size)
-                            Image(bitmap = bmp.asImageBitmap(), contentDescription = null, modifier = Modifier.fillMaxSize())
+                            Image(
+                                bitmap = bmp.asImageBitmap(),
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize()
+                            )
                         }
+
                         else -> {
                             Image(
                                 painter = painterResource(id = R.drawable.ic_profile_placeholder),
@@ -158,7 +174,7 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "Logged in as: ${savedProfile?.fullName ?: "Guest"}",
+                    text = "Logged in as: ${nameToShow ?: "Guest"}",
                     fontSize = 14.sp,
                     color = Color.DarkGray,
                     fontWeight = FontWeight.Medium
@@ -215,6 +231,12 @@ fun ProfileScreen(
                                     imageBase64 = encodedImage
                                 )
                             )
+
+                            // Save email to SharedPreferences
+                            val prefs =
+                                context.getSharedPreferences("user_profile", Context.MODE_PRIVATE)
+                            prefs.edit().putString("email", email).apply()
+
                             successText = "Profile saved successfully!"
                             errorText = ""
                             isEditing = false
@@ -235,7 +257,7 @@ fun ProfileScreen(
                         Text(if (showPasswordFields) "Hide Password Fields" else "Change Password")
                     }
 
-                    AnimatedVisibility(
+                    this.AnimatedVisibility(
                         visible = showPasswordFields,
                         enter = fadeIn(),
                         exit = fadeOut()
@@ -273,8 +295,10 @@ fun ProfileScreen(
                                     when {
                                         oldPassword.isBlank() || newPassword.isBlank() || confirmPassword.isBlank() ->
                                             errorText = "All fields are required."
+
                                         newPassword != confirmPassword ->
                                             errorText = "Passwords do not match."
+
                                         else -> {
                                             viewModel.changePassword(
                                                 oldPassword,
